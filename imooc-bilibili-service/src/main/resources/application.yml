@@ -1,0 +1,12 @@
+#指定开发环境
+spring:
+  profiles:
+    active: test
+  devtools:
+    restart:
+      enabled: true
+# 配置mapper映射位置
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.imooc.bilibili.dao
+

@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.imooc.bilibili.dao.UserDao">
+    <!--进行增加用户-->
+    <insert id="addUser" parameterType="com.imooc.bilibili.domain.User" useGeneratedKeys="true" keyProperty="id">
+        insert into t_user
+            (phone,email,password,salt,createTime)
+            values(#{phone},#{email},#{password},#{salt},#{createTime})
+    </insert>
+    <!--进行用户的基本信息增加-->
+    <insert id="addUserInfo" parameterType="com.imooc.bilibili.domain.UserInfo" useGeneratedKeys="true" keyProperty="userId">
+        insert into t_user_info
+            (userId,nick,avatar,sign,gender,birth,createTime)
+        values(#{userId},#{nick},#{avatar},#{sign},#{gender},#{birth},#{createTime})
+    </insert>
+
+    <!--新增用户令牌-->
+    <insert id="addRefreshToken">
+        insert into
+            t_refresh_token(
+            refreshToken,
+            userId,
+            createTime
+        )values(
+            #{refreshToken},
+            #{userId},
+            #{createTime}
+                       )
+    </insert>
+    <!--修改用户表-->
+    <update id="updateUsers" parameterType="com.imooc.bilibili.domain.User">
+        update t_user set
+    <if test="phone != null and phone != '' ">
+        phone = #{phone},
+    </if>
+    <if test="email != null and email != '' ">
+        email = #{email},
+    </if>
+    <if test="password != null and password !='' ">
+        password = #{password},
+    </if>
+        updateTime = #{updateTime}
+    where id = #{id}
+    </update>
+
+    <!--修改用户信息表-->
+    <update id="updateUserInfos" parameterType="com.imooc.bilibili.domain.UserInfo">
+        update t_user_info set
+    <if test="nick !=null and nick !='' ">
+        nick = #{nick},
+    </if>
+    <if test="avatar !=null">
+        avatar = #{avatar},
+    </if>
+    <if test="sign !=null">
+        sign = #{sign},
+    </if>
+    <if test="birth !=null and birth !='' ">
+        birth = #{birth},
+    </if>
+    <if test="gender !=null and gender !='' ">
+        gender = #{gender},
+    </if>
+        updateTime = #{updateTime}
+    where userId = #{userId};
+    </update>
+
+    <delete id="deleteRefreshTokenByUserId" parameterType="java.lang.Long">
+        delete from
+            t_refresh_token
+        where
+              userId = #{userId};
+    </delete>
+    <delete id="deleteRefreshToken">
+        delete from
+            t_refresh_token
+        where
+            refreshToken = #{refreshToken}
+          and userId = #{userId}
+    </delete>
+
+    <!--查询用户信息-->
+    <select id="getUserById" resultType="com.imooc.bilibili.domain.User" parameterType="java.lang.Long">
+        select * from t_user where id = #{id};
+    </select>
+
+    <!--查询用户信息表-->
+    <select id="getUserInfoByUserId" resultType="com.imooc.bilibili.domain.UserInfo" parameterType="java.lang.Long">
+        select * from t_user_info where userId = #{userId};
+    </select>
+
+    <!--根据手机号来查询用户-->
+    <select id="getUserByPhone"  parameterType="java.lang.String" resultType="com.imooc.bilibili.domain.User">
+    select * from t_user where phone = #{phone};
+    </select>
+
+    <!--根据手机或邮箱来查询用户表-->
+    <select id="getUserByPhoneOrEmail" resultType="com.imooc.bilibili.domain.User" parameterType="java.lang.String">
+        select
+            *
+        from
+            t_user
+        where
+            phone = #{phone} or email = #{email}
+    </select>
+
+
+    <select id="getUserInfoByUserIds" resultType="com.imooc.bilibili.domain.UserInfo">
+        select
+        *
+        from
+        t_user_info
+        where
+        1=1
+        <if test="userIdList != null and userIdList.size > 0">
+            and userId in
+            <foreach collection="userIdList" item = "userId" index="index" open="(" close=")" separator=",">
+                #{userId}
+            </foreach>
+        </if>
+    </select>
+
+
+    <!--用户分页查询总数-->
+    <select id="pageCountUserInfos" parameterType="java.util.Map" resultType="java.lang.Integer">
+        select
+        count(1)
+        from
+        t_user_info
+        where
+        1=1
+        <if test="nick != null and nick != '' ">
+            and nick like '%${nick}%'
+        </if>
+    </select>
+
+    <!--用户分页正式查询-->
+    <select id="pageListUserInfos" resultType="com.imooc.bilibili.domain.UserInfo" parameterType="java.util.Map">
+        select * from t_user_info where
+        1=1
+        <if test="nick!=null and nick !='' " >
+            and nick like '%${nick}%'
+        </if>
+        order by id desc
+        limit #{start},#{limit};
+    </select>
+    <select id="getRefreshTokenDetail" resultType="com.imooc.bilibili.domain.RefreshTokenDetail" parameterType="java.lang.String">
+        select
+            *
+        from
+            t_refresh_token
+        where
+            refreshToken = #{refreshToken}
+    </select>
+
+    <!--批量查询-->
+    <select id="batchGetUserInfoByUserIds" resultType="com.imooc.bilibili.domain.UserInfo" >
+        select
+            *
+        from
+            t_user_info
+        where
+            userId in
+        <foreach collection="userIdList" item="userId" open="(" close=")" separator=",">
+            #{userId}
+        </foreach>
+    </select>
+
+</mapper>

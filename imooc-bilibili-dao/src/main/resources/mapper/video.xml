@@ -1,0 +1,438 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.imooc.bilibili.dao.VideoDao">
+    <insert id="addVideos" parameterType="com.imooc.bilibili.domain.Video" keyProperty="id" useGeneratedKeys="true">
+        insert into
+            t_video(
+            id,
+            userId,
+            url,
+            thumbnail,
+            title,
+            `type`,
+            duration,
+            area,
+            description,
+            createTime
+        )values(
+                   #{id},
+                   #{userId},
+                   #{url},
+                   #{thumbnail},
+                   #{title},
+                   #{type},
+                   #{duration},
+                   #{area},
+                   #{description},
+                   #{createTime}
+               )
+    </insert>
+    <insert id="batchAddVideoTags" parameterType="java.util.List">
+        insert into
+            t_video_tag(
+              videoId,
+              tagId,
+              createTime
+        )values(
+                <foreach collection="tagList" item="videoTag" separator=",">
+                    #{videoTag.videoId},
+                    #{videoTag.tagId},
+                    #{videoTag.createTime},
+                </foreach>
+                       )
+    </insert>
+
+
+    <!--新增标签-->
+    <insert id="addVideoTags" parameterType="com.imooc.bilibili.domain.Tag">
+        insert into
+            t_tag(
+               id,
+               name,
+               createTime
+        )values(
+                #{id}
+                #{name},
+                #{createTime}
+                )
+    </insert>
+
+    <!--进行视频点赞-->
+    <insert id="addVideoLike"  parameterType="com.imooc.bilibili.domain.VideoLike" >
+            insert into
+                t_video_like(
+            videoId,
+            userId,
+            createTime
+            )values(
+            #{videoId},
+            #{userId},
+            #{createTime}
+          )
+    </insert>
+
+<!--新增收藏-->
+    <insert id="addVideoCollection" parameterType="com.imooc.bilibili.domain.VideoCollection">
+        insert into
+            t_video_collection(
+                id,
+                videoId,
+                userId,
+                groupId,
+                createTime
+        )values(
+                #{id},
+                #{videoId},
+                #{userId},
+                #{groupId},
+                #{createTime}
+                       )
+
+    </insert>
+    <insert id="addVideoCoin" parameterType="com.imooc.bilibili.domain.VideoCoin">
+        insert into
+            t_video_coin(
+            userId,
+            videoId,
+            amount,
+            createTime
+        )values (
+             #{userId},
+             #{videoId},
+             #{amount},
+             #{createTime}
+                        )
+    </insert>
+    <insert id="addVideoComment" parameterType="com.imooc.bilibili.domain.VideoComment">
+            insert into
+                t_video_comment(
+                    videoId,
+                    userId,
+                    comment,
+                    replyUserId,
+                    rootId,
+                    createTime
+            )values(
+                    #{videoId},
+                    #{userId},
+                    #{comment},
+                    #{replyUserId},
+                    #{rootId},
+                    #{createTime}
+                               )
+    </insert>
+
+    <!--添加用户观看记录-->
+    <insert id="addVideoView" parameterType="com.imooc.bilibili.domain.VideoView" >
+            insert into
+                t_video_view(
+                    videoId,
+                    userId,
+                    clientId,
+                    ip,
+                    createTime
+            )values(
+                    #{videoId},
+                    #{userId},
+                    #{clientId},
+                    #{ip},
+                    #{createTime}
+                               )
+    </insert>
+    <!--添加视频分隔文件-->
+    <insert id="batchAddVideoBinaryPictures" parameterType="java.util.List">
+        insert into
+        t_video_binary_picture(
+        videoId,
+        frameNo,
+        url,
+        videoTimestamp,
+        createTime
+        )
+        values
+        <foreach collection="pictureList" item="picture" separator=",">
+            (
+            #{picture.videoId},
+            #{picture.frameNo},
+            #{picture.url},
+            #{picture.videoTimestamp},
+            #{picture.createTime}
+            )
+        </foreach>
+    </insert>
+
+    <!--更新视频硬币数量-->
+    <update id="updateVideoCoin" parameterType="com.imooc.bilibili.domain.VideoCoin">
+        update
+            t_video_coin
+        set
+            amount = #{amount},
+            updateTime = #{updateTime}
+        where videoId = #{videoId}
+                and userId = #{userId};
+    </update>
+
+
+    <!--删除视频标签-->
+    <delete id="deleteVideoTags">
+        delete from
+            t_video_tag
+        where
+        videoId = #{videoId}
+        and
+        tagId in
+        <foreach collection="tagList" item="tagId" open="(" close=")" separator=",">
+            #{tagId}
+        </foreach>
+    </delete>
+
+    <!--取消点赞-->
+    <delete id="deleteVideoLike">
+        delete from
+            t_video_like
+        where
+            videoId = #{videoId} and userId = #{userId};
+    </delete>
+
+
+    <!--取消收藏-->
+    <delete id="deleteVideoCollection">
+        delete
+        from
+            t_video_collection
+        where
+              videoId = #{videoId}
+          and userId = #{userId};
+    </delete>
+    <!--分页查询符合条件的条数-->
+    <select id="pageCountVideos" resultType="java.lang.Integer" parameterType="java.util.Map">
+        select
+            count(1)
+        from
+            t_video
+        where
+            1=1
+            <if test="area != null and area != '' ">
+                and area = #{area}
+            </if>
+    </select>
+
+
+    <!--查询分页List-->
+    <select id="pageListVideos" resultType="com.imooc.bilibili.domain.Video" parameterType="java.util.Map">
+        select
+            *
+        from
+            t_video
+        where
+            1=1
+            <if test="area !=null and area !='' ">
+                and area = #{area}
+            </if>
+        order by id desc
+        limit #{start},#{limit}
+    </select>
+    <select id="getVideoTagList" resultType="com.imooc.bilibili.domain.VideoTag" parameterType="java.lang.Long">
+        select
+            *
+        from
+            t_video_tag
+        where
+            videoId = #{videoId};
+    </select>
+    <select id="getTagInfoList" resultType="com.imooc.bilibili.domain.Tag">
+        select
+            *
+        from
+            t_tag
+        where
+        1=1
+        <if test="tagList !=null and tagList !=''">
+            and tagId in
+            <foreach collection="tagList" item="tagId" index="index" open="(" close=")" separator=",">
+                #{tagId}
+            </foreach>
+        </if>
+    </select>
+    <select id="getVideoById" resultType="com.imooc.bilibili.domain.Video" parameterType="java.lang.Long">
+        select
+            *
+        from
+            t_video_like
+        where videoId = #{videoId};
+    </select>
+
+    <!--查询用户是否点赞-->
+    <select id="getVideoLikeByVideoIdAndUserId" resultType="com.imooc.bilibili.domain.VideoLike">
+        select
+            *
+        from
+            t_video_like
+        where
+            videoId = #{videoId} and userId = #{userId};
+    </select>
+
+    <!--查询用户点赞数的多少-->
+    <select id="getVideoLikes" resultType="java.lang.Long" parameterType="java.lang.Long">
+        select
+            count(1)
+        from
+            t_video_like
+        where
+            videoId = #{videoId};
+    </select>
+
+    <select id="getVideoCollections" resultType="java.lang.Long" parameterType="java.lang.Long">
+        select
+            count(1)
+        from
+            t_video_collection
+        where
+            videoId = #{videoId};
+    </select>
+
+    <!--查询收藏情况-->
+    <select id="getVideoCollectionByVideoIdAndUserId" resultType="com.imooc.bilibili.domain.VideoCollection">
+        select
+            *
+        from
+            t_video_collection
+        where
+            videoId = #{videoId} and userId = #{userId};
+    </select>
+
+    <!--查询用户投币数量-->
+    <select id="getVideoCoinByVideoIdAndUserId" resultType="com.imooc.bilibili.domain.VideoCoin">
+        select
+            *
+        from
+            t_video_coin
+        where videoId = #{videoId} and userId = #{userId};
+    </select>
+    <!--查询数量-->
+    <select id="getVideoCoinsAmount" resultType="java.lang.Long" parameterType="java.lang.Long">
+        select
+            sum(amount)
+        from
+            t_video_coin
+        where
+            videoId = #{videoId};
+    </select>
+
+    <!--查询总数-->
+    <select id="pageCountVideoComments" resultType="java.lang.Integer" parameterType="java.util.Map">
+        select
+            count(1)
+        from
+            t_video_comment
+        where
+            videoId = #{videoId}
+            and rootId is null;
+    </select>
+
+    <!--视频分页查询-->
+    <select id="pageListVideoComments" resultType="com.imooc.bilibili.domain.VideoComment" parameterType="java.util.Map">
+        select
+            *
+        from
+            t_video_comment
+        where
+            videoId = #{videoId}
+            and rootId is null
+            order by id desc
+            limit #{start},#{limit}
+    </select>
+
+    <!--批量查询评论-->
+    <select id="batchGetVideoCommentsByRootIds" resultType="com.imooc.bilibili.domain.VideoComment" parameterType="java.util.List">
+        select
+            *
+        from
+            t_video_comments
+        where rootId in
+        <foreach collection="rootIdList" item="rootId" open="(" close=")" separator=",">
+            #{rootId}
+        </foreach>
+        order by id;
+    </select>
+    <select id="getVideoDetails" resultType="com.imooc.bilibili.domain.Video" parameterType="java.lang.Long">
+        select
+            *
+        from
+            t_video
+        where id = #{id};
+    </select>
+    <!--查询对应的观看记录-->
+    <select id="getVideoView" resultType="com.imooc.bilibili.domain.VideoView" parameterType="java.util.Map">
+        select
+            *
+        from
+            t_video_view
+        where
+            videoId = #{videoId}
+        <if test="userId==null and clientId != null">
+            and clientId = #{clientId} and userId is null
+        </if>
+        <if test="userId != null">
+            and userId = #{userId}
+        </if>
+        <if test="ip != null and ip !='' ">
+            and ip = #{ip}
+        </if>
+        <if test="today != null and today != '' ">
+            and DATE_FORMATE(createTime,'%Y-%m-%d') = #{today}
+        </if>
+    </select>
+    <!--查看观看记录人数-->
+    <select id="getVideoViewCount" resultType="java.lang.Integer" parameterType="java.lang.Integer">
+        select
+            count(1)
+        from
+            t_video_view
+        where
+            videoId = #{videoId};
+    </select>
+
+    <select id="getAllUserPreference" resultType="com.imooc.bilibili.domain.UserPreference">
+        select
+            userId,
+            videoId,
+        sum(case operationType
+            when '0' then 6
+            when '1' then 2
+            when '2' then 2
+            else 0 end)as `value`
+        from
+            t_video_operation
+        group by userId,videoId;
+    </select>
+
+    <!--通过id批量查询视频-->
+    <select id="batchGetVideoByIds" resultType="com.imooc.bilibili.domain.Video">
+        select
+        *
+        from
+        t_video
+        where
+        id in
+        <foreach collection="idList" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
+    <!--查看视频二值化-->
+    <select id="getVideoBinaryImages" resultType="com.imooc.bilibili.domain.VideoBinaryPicture" parameterType="java.util.Map">
+        select
+            *
+        from
+            t_video_binary_picture
+        where
+        <if test="frameNo != null and frameNo != '' ">
+            and frameNo = #{frameNo}
+        </if>
+        <if test="videoTimestamp != null">
+            and videoTimestamp = #{videoTimestamp}
+        </if>
+    </select>
+
+</mapper>

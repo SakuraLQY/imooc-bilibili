@@ -1,0 +1,47 @@
+
+spring:
+  #Mysql datasource connection
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/imooc-bilibili?useUnicode=true&characterEncoding=utf8&useSSL=false
+    username: root
+    password: 123456
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    password:
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+  elasticsearch:
+    rest:
+      uris: 192.168.117.130:9200
+  application:
+    name: imooc-bilibili-api
+rocketmq:
+  name:
+    server:
+      address: localhost:9876
+#      address: 192.168.117.129:9876
+fdfs:
+  tracker-list: 192.168.117.130:22122
+  connect-timeout: 600
+  http:
+    storage-addr: http://192.168.117.130:8888/group1/
+baidu:
+  develop:
+    clientId: WGvatn1Y6tVMsYRRp8AtoWpZ
+    clientSecret: TLEpkVUsToreRUfWIws7fhBFK6fEL8si
+    auth:
+      url: https://aip.baidubce.com/oauth/2.0/token
+    splitBody:
+      url: https://aip.baidubce.com/rest/2.0/image-classify/v1/body_seg
+# eureka注册中心
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:15006/eureka/
+  instance:
+      instanceId: ${spring.cloud.client.ip-address}:${server.port}
+      prefer-ip-address: true
